@@ -1,0 +1,12 @@
+node_modules
+dist
+data
+
+# Environment files (keep only template tracked)
+.env
+.env.*
+!.env.example
+
+# OS / logs
+.DS_Store
+*.log
