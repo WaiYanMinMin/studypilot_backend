@@ -6,6 +6,7 @@
     "dev": "tsx backend/src/server.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/backend/src/server.js",
+    "migrate": "prisma migrate deploy --schema prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema prisma/schema.prisma",
     "prisma:migrate:deploy": "prisma migrate deploy --schema prisma/schema.prisma",
     "typecheck": "tsc --noEmit -p tsconfig.json",
