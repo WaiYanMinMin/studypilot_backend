@@ -68,3 +68,25 @@ docker run --env-file .env.local -p 4000:4000 studypilot-backend
 - `GET /api/documents`
 - `POST /api/feedback`
 - `GET /health`
+
+## 9) Railway quick deploy
+
+1. Push this repo to GitHub.
+2. In Railway, create a new project from your GitHub repo.
+3. Add a PostgreSQL service in the same Railway project.
+4. Open backend service Variables and set values from `.env.local`:
+   - `NODE_ENV=production`
+   - `PORT=4000`
+   - `TRUST_PROXY=1`
+   - `CORS_ORIGIN=<your-frontend-url>`
+   - `DATABASE_URL=<railway-postgres-url>`
+   - `OPENAI_API_KEY`, `OPENAI_MODEL`
+   - `AWS_REGION`, `S3_BUCKET_NAME`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
+   - optional `SESSION_COOKIE_DOMAIN`
+5. Railway will use `railway.json`:
+   - Build: `npm ci && npm run prisma:generate && npm run build`
+   - Start: `npm run prisma:migrate:deploy && npm run start`
+6. After deploy succeeds, copy the backend public URL and set it in frontend API base URL.
+7. Verify:
+   - `GET <backend-url>/health`
+   - frontend auth flow with credentials enabled.
