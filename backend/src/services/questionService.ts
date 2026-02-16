@@ -57,6 +57,7 @@ export async function askFromDocuments(params: {
   }
 
   return answerQuestionWithCitations({
+    userId: params.userId,
     question: params.question,
     citations
   });
@@ -76,6 +77,7 @@ export async function askFromHighlight(params: {
   const retrievalQuery = `${params.question} ${params.highlightText}`;
   const citations = retrieveTopCitations(docs, retrievalQuery);
   return answerQuestionWithCitations({
+    userId: params.userId,
     question: params.question,
     citations,
     highlightText: params.highlightText

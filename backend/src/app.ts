@@ -32,6 +32,12 @@ import {
 } from "./services/studyResourceService";
 import { parseFeedbackPayload, submitFeedback } from "./services/feedbackService";
 import { ServiceError } from "./services/errors";
+import {
+  getUserAiConfig,
+  parseAiConfigPayload,
+  revokeUserAiKey,
+  updateUserAiConfig
+} from "./services/aiConfigService";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -154,6 +160,38 @@ export function createApp() {
         email: payload.email
       });
       res.json({ user: updated });
+    })
+  );
+
+  app.get(
+    "/api/ai/config",
+    requireAuth,
+    asyncHandler(async (req, res) => {
+      const result = await getUserAiConfig((req as AuthenticatedRequest).userId);
+      res.json(result);
+    })
+  );
+
+  app.patch(
+    "/api/ai/config",
+    requireAuth,
+    asyncHandler(async (req, res) => {
+      const payload = parseAiConfigPayload(req.body);
+      const result = await updateUserAiConfig({
+        userId: (req as AuthenticatedRequest).userId,
+        apiKey: payload.apiKey,
+        model: payload.model
+      });
+      res.json(result);
+    })
+  );
+
+  app.delete(
+    "/api/ai/config/key",
+    requireAuth,
+    asyncHandler(async (req, res) => {
+      const result = await revokeUserAiKey((req as AuthenticatedRequest).userId);
+      res.json(result);
     })
   );
 

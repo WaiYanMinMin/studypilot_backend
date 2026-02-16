@@ -25,6 +25,9 @@ Standalone backend API for StudyPilot.
 - `POST /api/ask-highlight`
 - `POST /api/resources`
 - `POST /api/feedback`
+- `GET /api/ai/config`
+- `PATCH /api/ai/config`
+- `DELETE /api/ai/config/key`
 - `GET /health`
 
 ## Quick Start

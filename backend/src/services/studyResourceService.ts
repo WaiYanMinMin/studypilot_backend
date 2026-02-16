@@ -30,5 +30,5 @@ export async function generateResourcesForDocuments(params: {
   }
 
   const corpus = buildLectureCorpus(docs);
-  return generateStudyResources({ lectureText: corpus });
+  return generateStudyResources({ userId: params.userId, lectureText: corpus });
 }

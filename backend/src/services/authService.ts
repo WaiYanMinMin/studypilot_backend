@@ -72,7 +72,10 @@ export async function signupWithEmail(params: {
   password: string;
 }) {
   const email = params.email.toLowerCase().trim();
-  const existing = await prisma.user.findUnique({ where: { email } });
+  const existing = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true }
+  });
   if (existing) {
     throw new ServiceError("Email is already registered.", 409);
   }
@@ -83,7 +86,8 @@ export async function signupWithEmail(params: {
       fullName: params.fullName.trim(),
       email,
       passwordHash
-    }
+    },
+    select: { id: true, fullName: true, email: true }
   });
   const session = await createUserSession(user.id);
   return {
@@ -95,7 +99,10 @@ export async function signupWithEmail(params: {
 
 export async function signinWithEmail(params: { email: string; password: string }) {
   const email = params.email.toLowerCase().trim();
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, fullName: true, email: true, passwordHash: true }
+  });
   if (!user) {
     throw new ServiceError("Invalid email or password.", 401);
   }

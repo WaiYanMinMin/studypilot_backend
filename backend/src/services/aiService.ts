@@ -1,19 +1,42 @@
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
+import { prisma } from "../db/prisma";
 import type {
   AskResponse,
   Citation,
   QuizQuestion,
   StudyResourcesResponse
 } from "../types";
+import { ServiceError } from "./errors";
 
-function getClient() {
-  const apiKey = process.env.OPENAI_API_KEY;
+async function getClientForUser(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { openAiApiKey: true }
+  });
+  if (!user) {
+    throw new ServiceError("User not found.", 404);
+  }
+  const apiKey = user.openAiApiKey || process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error("OPENAI_API_KEY is missing. Add it to your environment.");
+    throw new ServiceError(
+      "OpenAI API key is not configured. Add a user key or server key.",
+      400
+    );
   }
   return new OpenAI({ apiKey });
+}
+
+async function getModelForUser(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { openAiModel: true }
+  });
+  if (!user) {
+    throw new ServiceError("User not found.", 404);
+  }
+  return user.openAiModel || process.env.OPENAI_MODEL || "gpt-4o-mini";
 }
 
 function formatCitations(citations: Citation[]) {
@@ -39,14 +62,17 @@ function extractChatText(
 }
 
 export async function answerQuestionWithCitations(params: {
+  userId: string;
   question: string;
   citations: Citation[];
   highlightText?: string;
 }): Promise<AskResponse> {
-  const { question, citations, highlightText } = params;
+  const { userId, question, citations, highlightText } = params;
 
-  const client = getClient();
-  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+  const [client, model] = await Promise.all([
+    getClientForUser(userId),
+    getModelForUser(userId)
+  ]);
 
   const highlightContext = highlightText
     ? `Highlighted text (highest priority context):\n${highlightText}\n\n`
@@ -80,10 +106,13 @@ export async function answerQuestionWithCitations(params: {
 }
 
 export async function generateStudyResources(params: {
+  userId: string;
   lectureText: string;
 }): Promise<StudyResourcesResponse> {
-  const client = getClient();
-  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+  const [client, model] = await Promise.all([
+    getClientForUser(params.userId),
+    getModelForUser(params.userId)
+  ]);
 
   const messages: ChatCompletionMessageParam[] = [
     {
